@@ -1,0 +1,16 @@
+export const resourceConfig: Record<string, { model: string; label: string; fields: string[] }> = {
+  products: { model: "product", label: "Product", fields: ["sku", "name", "category", "unit", "sellingPrice", "costPrice", "reorderLevel", "currentStock", "isActive"] },
+  suppliers: { model: "supplier", label: "Supplier", fields: ["name", "phone", "email", "address", "bin", "openingBalance"] },
+  customers: { model: "customer", label: "Customer", fields: ["name", "phone", "email", "address", "customerType", "creditLimit", "openingBalance", "creditBalance"] },
+  warehouses: { model: "warehouse", label: "Warehouse", fields: ["name", "code", "address", "isActive"] },
+  "stock-movements": { model: "stockMovement", label: "Stock movement", fields: ["productId", "warehouseId", "type", "quantity", "reference", "notes"] },
+  "purchase-orders": { model: "purchaseOrder", label: "Purchase order", fields: ["orderNo", "supplierId", "productId", "quantity", "unitPrice", "total", "status", "paymentStatus", "paidAmount", "dueAmount", "orderDate", "items", "notes"] },
+  "production-orders": { model: "productionOrder", label: "Production order", fields: ["orderNo", "productId", "plannedQty", "producedQty", "status", "batchNo", "manufacturingDate", "expiryDate"] },
+  "sales-orders": { model: "salesOrder", label: "Sales order", fields: ["orderNo", "customerId", "productId", "quantity", "unitPrice", "total", "status", "paymentStatus", "paidAmount", "dueAmount", "vatAmount", "vatPaid", "orderDate", "items", "notes"] },
+  returns: { model: "productReturn", label: "Product return", fields: ["returnNo", "salesOrderId", "invoiceNo", "customerId", "customerName", "productId", "batchNo", "soldQty", "quantity", "unitPrice", "refundAmount", "reason", "condition", "status", "disposition", "qcStatus", "qcNotes", "resolutionType", "refundMethod", "vatAdjustment", "vatAdjusted", "courierConsignment", "courierCharge", "replacementOrderId", "approvedBy", "approvedAt", "inspectedBy", "inspectionDate"] },
+  "courier-shipments": { model: "courierShipment", label: "Courier shipment", fields: ["consignmentId", "provider", "salesOrderId", "trackingCode", "status", "codAmount", "deliveryCharge"] },
+  "vat-transactions": { model: "vatTransaction", label: "VAT transaction", fields: ["transactionNo", "transactionType", "taxableAmount", "vatRate", "vatAmount", "transactionDate", "mushakForm"] },
+  "account-transactions": { model: "accountTransaction", label: "Account transaction", fields: ["transactionNo", "type", "category", "amount", "paymentMethod", "reference", "partyName", "status", "transactionDate", "notes"] },
+  users: { model: "user", label: "User", fields: ["name", "email", "role", "isActive", "permissions", "password"] },
+  "audit-logs": { model: "auditLog", label: "Audit log", fields: ["userId", "action", "entity", "entityId", "details"] },
+};

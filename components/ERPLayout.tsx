@@ -28,6 +28,11 @@ export default function ERPLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [paletteQuery, setPaletteQuery] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const cleanPath = useMemo(() => pathname.replace(/^\//, ""), [pathname]);
 
@@ -86,8 +91,35 @@ export default function ERPLayout({ children }: { children: React.ReactNode }) {
 
   const userInitial = user?.name ? user.name[0].toUpperCase() : "U";
 
+  if (!mounted) {
+    return (
+      <div suppressHydrationWarning className="min-h-screen flex bg-slate-50 text-slate-900">
+        <aside className="w-72 bg-[#0d1627] hidden md:flex flex-col shrink-0 animate-pulse">
+          <div className="h-[68px] px-5 flex items-center border-b border-white/10 gap-3">
+            <div className="w-10 h-10 bg-blue-600/30 rounded-xl" />
+            <div className="h-4 w-28 bg-white/20 rounded" />
+          </div>
+          <div className="p-4 space-y-3">
+            <div className="h-8 bg-white/10 rounded-lg" />
+            <div className="h-8 bg-white/10 rounded-lg" />
+            <div className="h-8 bg-white/10 rounded-lg" />
+          </div>
+        </aside>
+        <div className="flex-1 flex flex-col min-h-screen">
+          <header className="h-[68px] bg-white border-b border-slate-200/90 px-4 sm:px-8 flex items-center justify-between" />
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-2.5">
+              <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" />
+              <div className="text-xs font-semibold text-slate-400">Loading workspace...</div>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex bg-slate-50 text-slate-900 print:min-h-0 print:bg-white print:block">
+    <div suppressHydrationWarning className="min-h-screen flex bg-slate-50 text-slate-900 print:min-h-0 print:bg-white print:block">
       {/* Sticky/Fixed Collapsible Sidebar */}
       <Sidebar
         mobileOpen={mobileMenuOpen}

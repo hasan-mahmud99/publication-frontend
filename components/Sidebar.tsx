@@ -152,6 +152,7 @@ export default function Sidebar({
 
       {/* Main Sidebar */}
       <aside
+        suppressHydrationWarning
         className={`fixed md:sticky top-0 left-0 h-screen w-72 bg-[#0d1627] text-white flex flex-col z-50 border-r border-slate-800 transition-transform duration-200 ease-in-out ${
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}

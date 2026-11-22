@@ -165,6 +165,28 @@ export async function POST(req: NextRequest, { params }: Ctx) {
       if (data.isActive === undefined) data.isActive = true;
     }
 
+    if (key === "products") {
+      if (!data.sku || typeof data.sku !== "string" || !data.sku.trim()) {
+        const prefixMap: Record<string, string> = {
+          Sauces: "SAU",
+          Spices: "SPC",
+          Condiments: "CND",
+          "Packaging Materials": "PKG",
+          "Raw Materials": "RAW",
+        };
+        const prefix = (data.category && prefixMap[data.category]) || "PRD";
+        let candidate = `${prefix}-${Math.floor(1000 + Math.random() * 9000)}`;
+        let existing = await prisma.product.findUnique({ where: { sku: candidate } });
+        while (existing) {
+          candidate = `${prefix}-${Math.floor(1000 + Math.random() * 9000)}`;
+          existing = await prisma.product.findUnique({ where: { sku: candidate } });
+        }
+        data.sku = candidate;
+      } else {
+        data.sku = data.sku.trim().toUpperCase();
+      }
+    }
+
     if (key === "sales-orders") {
       let items: any[] = [];
       try {

@@ -310,6 +310,31 @@ const numberFields = [
 
 const pretty = (s: string) => s.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase());
 
+function generateUniqueSku(category?: string, existingProducts: { sku?: string }[] = []): string {
+  const prefixMap: Record<string, string> = {
+    Sauces: "SAU",
+    Spices: "SPC",
+    Condiments: "CND",
+    "Packaging Materials": "PKG",
+    "Raw Materials": "RAW",
+  };
+  const prefix = (category && prefixMap[category]) || "PRD";
+  const existingSet = new Set(
+    existingProducts
+      .filter((p) => p && p.sku)
+      .map((p) => String(p.sku).trim().toUpperCase())
+  );
+
+  for (let i = 0; i < 100; i++) {
+    const num = Math.floor(1000 + Math.random() * 9000);
+    const candidate = `${prefix}-${num}`;
+    if (!existingSet.has(candidate)) {
+      return candidate;
+    }
+  }
+  return `${prefix}-${Date.now().toString().slice(-6)}`;
+}
+
 interface FilterConfig {
   key: string;
   label: string;
@@ -715,10 +740,11 @@ export default function DataWorkspace({ path }: { path: string }) {
     setQuickAddType(type);
     setQuickError("");
     if (type === "product") {
+      const defaultCat = "Sauces";
       setQuickForm({
         name: "",
-        sku: `PRD-${Date.now().toString().slice(-5)}`,
-        category: "Sauces",
+        sku: generateUniqueSku(defaultCat, refs.products),
+        category: defaultCat,
         unit: "bottle",
         sellingPrice: 150,
         costPrice: 110,
@@ -1056,6 +1082,18 @@ export default function DataWorkspace({ path }: { path: string }) {
     const initialForm: Row = {};
 
     // Intelligent default values
+    if (resource === "products" || fields.includes("sku")) {
+      const defaultCat = "Sauces";
+      initialForm.category = defaultCat;
+      initialForm.sku = generateUniqueSku(defaultCat, refs.products);
+      initialForm.unit = "bottle";
+      initialForm.sellingPrice = 150;
+      initialForm.costPrice = 110;
+      initialForm.reorderLevel = 25;
+      initialForm.currentStock = 0;
+      initialForm.isActive = true;
+    }
+
     if (fields.includes("orderNo")) {
       const prefix = resource === "sales-orders" ? "SO" : resource === "purchase-orders" ? "PO" : "PRD";
       initialForm.orderNo = `${prefix}-${Date.now().toString().slice(-6)}`;
@@ -1143,6 +1181,11 @@ export default function DataWorkspace({ path }: { path: string }) {
   function handleFieldChange(f: string, value: any) {
     setForm((prev) => {
       const updated = { ...prev, [f]: value };
+
+      // Auto-update SKU prefix when Category is changed while creating a new Product
+      if (resource === "products" && f === "category" && !editing) {
+        updated.sku = generateUniqueSku(value, refs.products);
+      }
 
       // Auto-calculate vatAmount if taxableAmount and vatRate are set
       if (resource === "vat-transactions" && (f === "taxableAmount" || f === "vatRate")) {
@@ -1626,6 +1669,40 @@ export default function DataWorkspace({ path }: { path: string }) {
       return (
         <div className="mt-1.5 p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs font-mono font-bold text-rose-600">
           ৳{due.toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (স্বয়ংক্রিয় হিসাবকৃত বকেয়া)
+        </div>
+      );
+    }
+
+    // 5.5 Dedicated SKU Input with Auto-Generate / Refresh Button
+    if (f === "sku") {
+      return (
+        <div className="mt-1.5 space-y-1">
+          <div className="relative flex items-center">
+            <input
+              type="text"
+              required
+              value={String(val || "")}
+              onChange={(e) => handleFieldChange("sku", e.target.value.toUpperCase())}
+              placeholder="e.g. SAU-5021"
+              className="w-full border border-slate-200 bg-slate-50/50 rounded-lg pl-3 pr-28 py-2 text-sm font-mono font-bold tracking-wide outline-none focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-500 uppercase"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const newSku = generateUniqueSku(form.category, refs.products);
+                handleFieldChange("sku", newSku);
+              }}
+              title="স্বয়ংক্রিয় নতুন SKU তৈরি করুন (Regenerate Unique SKU)"
+              className="absolute right-1 px-2.5 py-1 text-xs font-semibold bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md border border-blue-200 flex items-center gap-1 transition cursor-pointer"
+            >
+              <RefreshCw size={12} />
+              <span>Auto SKU</span>
+            </button>
+          </div>
+          <div className="flex items-center justify-between text-[10.5px] text-slate-400">
+            <span>✨ স্বয়ংক্রিয় তৈরি SKU কোড (প্রয়োজনে নিজস্ব কোডও লিখতে পারেন)</span>
+            {val && <span className="font-mono text-blue-600 font-semibold">{val}</span>}
+          </div>
         </div>
       );
     }
